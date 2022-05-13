@@ -1,69 +1,162 @@
+import command.*;
 import obstacle.Obstacle;
+import tank.Tank;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
-public class Game extends JFrame{
+public class Game extends JFrame implements Observer {
 
     private int boardSizeX = 13;
     private int boardSizeY = 13;
     private GridUI gridUI;
+    private Gui gui;
+    private boolean isSinglePlayer;
 
     private World world;
 
     private int score;
 
     private Thread thread;
-    private long delayed = 1000/3;
+
+    private List<Command> commandList = new ArrayList<Command>();
 
     public Game() {
-        setup();
+        super();
+
+        setLayout(new BorderLayout());
+
+        gui = new Gui();
+        add(gui, BorderLayout.SOUTH);
+        world = new World(boardSizeX,boardSizeY,true);
         gridUI = new GridUI();
-        add(gridUI);
-        pack();
+        add(gridUI, BorderLayout.CENTER);
+
+        setSize(boardSizeX*50, boardSizeY*55);
+
+
+        setAlwaysOnTop(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        world = new World(boardSizeX,boardSizeY);
-    }
-
-    public void setup(){
-        // setup for starting game
-        score = 0;
     }
 
 
 
-    public void start(){
-        setVisible(true);
-        thread = new Thread(){
-            @Override
-            public void run(){
-                    repaint();
-                    waitFor(delayed);
+
+    @Override
+    public void update(Observable o, Object arg) {
+        gridUI.repaint();
+        gui.updateTick(world.getTick());
+        for(Command c: commandList){
+            if (world.getTick() == c.getTick()){
+                c.execute();
+            }
+        }
+
+    }
+
+
+    class Gui extends JPanel {
+
+
+
+        private JLabel tickLabel;
+        private JButton singleButton;
+        private JButton twoButton;
+        private JButton replayButton;
+        private JLabel gameOverLabel;
+
+        public Gui() {
+            setLayout(new FlowLayout());
+            tickLabel = new JLabel("Tick: 0");
+            add(tickLabel);
+
+
+            singleButton = new JButton("Single-Player");
+            singleButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+//                    world.start();
+                    singleButton.setEnabled(false);
+                    twoButton.setEnabled(false);
+                    Game.this.requestFocus();
+                    isSinglePlayer = true;
+
+
+                    Game.this.addKeyListener(new Controller());
+                    Game.this.world = new World(boardSizeX,boardSizeY,isSinglePlayer);
+                    Game.this.world.addObserver(Game.this);
+                    Game.this.world.start();
                 }
-        };
-        thread.start();
+            });
+            add(singleButton);
+
+            twoButton = new JButton("Two-Player");
+            twoButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    singleButton.setEnabled(false);
+                    twoButton.setEnabled(false);
+                    Game.this.requestFocus();
+                    isSinglePlayer = false;
+
+                    Game.this.addKeyListener(new Controller());
+                    Game.this.world = new World(boardSizeX,boardSizeY,isSinglePlayer);
+                    Game.this.world.addObserver(Game.this);
+                    Game.this.world.start();
+
+                }
+            });
+            add(twoButton);
 
 
-    }
+            replayButton = new JButton("Replay");
+            replayButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    world.start();
+                    replayButton.disable();
+
+                }
+            });
+            replayButton.setEnabled(false);
+            add(replayButton);
+            gameOverLabel = new JLabel("GAME OVER");
+            gameOverLabel.setForeground(Color.red);
+            gameOverLabel.setVisible(false);
+            add(gameOverLabel);
+        }
 
 
-    private void waitFor(long delayed){
-        try{
-            Thread.sleep(delayed);
-        } catch (InterruptedException e){
-            e.printStackTrace();
+        public void updateTick(int tick) {
+            tickLabel.setText("Tick: " + tick);
+        }
+
+        public void showGameOverLabel() {
+            gameOverLabel.setVisible(true);
+        }
+
+        public void enableReplayButton() {
+            replayButton.setEnabled(true);
         }
     }
+
 
     class GridUI extends JPanel {
         public static final int CELL_PIXEL_SIZE = 50;
 
-        private Image grass;
-
 
         public GridUI() {
             setPreferredSize(new Dimension(boardSizeX * CELL_PIXEL_SIZE, boardSizeY * CELL_PIXEL_SIZE));
-            grass = new ImageIcon("img/grass.jpeg").getImage();
+            setDoubleBuffered(true);
         }
 
 
@@ -75,7 +168,11 @@ public class Game extends JFrame{
             g.setColor(Color.black);
             g.fillRect(0, 0, boardSizeX*CELL_PIXEL_SIZE, boardSizeY*CELL_PIXEL_SIZE);
 
+
+            paintPlayer(g);
             paintTree(g);
+
+
 
 
             g.setColor(Color.lightGray);
@@ -102,13 +199,94 @@ public class Game extends JFrame{
         }
 
 
+        private void paintPlayer(Graphics g) {
+            Tank[] players = world.getPlayer();
+            for(int i = 0; i < players.length; i++) {
+                int x = players[i].getX()*CELL_PIXEL_SIZE;
+                int y = players[i].getY()*CELL_PIXEL_SIZE;
+                g.drawImage(players[i].getImage(),x-6 ,y-6 ,CELL_PIXEL_SIZE+12,CELL_PIXEL_SIZE+12,null,null);
+            }
+
+
+
+        }
+
 
 
     }
 
+    class Controller extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            super.keyPressed(e);
+
+            if(world.isSinglePlayer()){
+                if(e.getKeyCode() == KeyEvent.VK_UP) {
+                    Command c = world.getPlayer()[0].getCurrentState().turnNorth(world.getPlayer()[0],world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                } else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    Command c = world.getPlayer()[0].getCurrentState().turnSouth(world.getPlayer()[0],world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                } else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    world.getPlayer()[0].getCurrentState().turnEast(world.getPlayer()[0]);
+//                    Command c = new CommandTurnEast(world.getPlayer()[0], world.getTick());
+//                    commandList.add(c);
+//                    c.execute();
+                }else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+                    world.getPlayer()[0].getCurrentState().turnWest(world.getPlayer()[0]);
+//                    commandList.add(c);
+//                    c.execute();
+                }
+            }else{
+                if(e.getKeyCode() == KeyEvent.VK_UP) {
+                    Command c = new CommandTurnNorth(world.getPlayer()[1], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                } else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    Command c = new CommandTurnSouth(world.getPlayer()[1], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                } else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    Command c = new CommandTurnEast(world.getPlayer()[1], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                }else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
+                    Command c = new CommandTurnWest(world.getPlayer()[1], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                }
+
+                if(e.getKeyCode() == KeyEvent.VK_W) {
+                    Command c = new CommandTurnNorth(world.getPlayer()[0], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                } else if(e.getKeyCode() == KeyEvent.VK_S) {
+                    Command c = new CommandTurnSouth(world.getPlayer()[0], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                } else if(e.getKeyCode() == KeyEvent.VK_D) {
+                    Command c = new CommandTurnEast(world.getPlayer()[0], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                }else if(e.getKeyCode() == KeyEvent.VK_A) {
+                    Command c = new CommandTurnWest(world.getPlayer()[0], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                }
+
+            }
+
+
+        }
+
+
+        }
+
     public static void main(String[] args) {
         Game game = new Game();
-        game.start();
+        game.setVisible(true);
     }
 
 

@@ -76,6 +76,7 @@ public class Game extends JFrame{
             g.fillRect(0, 0, boardSizeX*CELL_PIXEL_SIZE, boardSizeY*CELL_PIXEL_SIZE);
 
             paintTree(g);
+            paintSteel(g);
 
 
             g.setColor(Color.lightGray);
@@ -97,10 +98,15 @@ public class Game extends JFrame{
                 int y = listTree[i].getY()*CELL_PIXEL_SIZE;
                 g.drawImage(listTree[i].getImage(),x ,y ,CELL_PIXEL_SIZE,CELL_PIXEL_SIZE,Color.black,null);
             }
-
-
         }
-
+        private void paintSteel(Graphics g) {
+            Obstacle[] listSteel = world.getSteel();
+            for (int i = 0; i < listSteel.length; i++) {
+                int x = listSteel[i].getX() * CELL_PIXEL_SIZE;
+                int y = listSteel[i].getY() * CELL_PIXEL_SIZE;
+                g.drawImage(listSteel[i].getImage(), x, y, CELL_PIXEL_SIZE, CELL_PIXEL_SIZE, Color.black, null);
+            }
+        }
 
 
 

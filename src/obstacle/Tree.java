@@ -9,7 +9,7 @@ public class Tree extends Obstacle {
     public Tree(int x, int y) {
         this.setX(x);
         this.setY(y);
-        this.setImage(new ImageIcon("img/tree.png").getImage());
+        this.setImage(new ImageIcon("img/grass_.jpeg").getImage());
     }
 
 

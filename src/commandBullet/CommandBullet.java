@@ -30,7 +30,4 @@ public class CommandBullet {
         this.bullet = tank.getBulletPool().requestBullet(tank.getX()+dx, tank.getY()+dy, dx,dy);
     }
 
-    public Bullet getBullet() {
-        return bullet;
-    }
 }

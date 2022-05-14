@@ -1,7 +1,5 @@
 package command;
 
-import State.StateEast;
-import State.StateWest;
 import tank.Tank;
 
 public class CommandTurnRight extends Command{

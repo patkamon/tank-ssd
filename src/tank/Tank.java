@@ -16,14 +16,33 @@ public abstract class Tank {
     private String imgName;
 
     private BulletPool bulletPool;
+    private int boardX;
+    private int boardY;
 
-
-    public Tank(int x, int y, String imgName) {
+    public Tank(int x, int y, String imgName,int boardx, int boardy) {
         this.x = x;
         this.y = y;
         this.imgName = imgName;
         this.currentState = new StateNorth();
         this.bulletPool = new BulletPool();
+        this.boardX = boardx;
+        this.boardY = boardy;
+    }
+
+    public int getBoardX() {
+        return boardX;
+    }
+
+    public void setBoardX(int boardX) {
+        this.boardX = boardX;
+    }
+
+    public int getBoardY() {
+        return boardY;
+    }
+
+    public void setBoardY(int boardY) {
+        this.boardY = boardY;
     }
 
     public BulletPool getBulletPool() {
@@ -72,14 +91,13 @@ public abstract class Tank {
     }
 
 
-    public void turnDirection(int dx, int dy) {
-        this.dx = dx;
-        this.dy = dy;
-    }
-
     public void move() {
-        this.x += dx;
-        this.y += dy;
+        if (this.x + dx < boardX && this.x + dx >-1) {
+            this.x += dx;
+        }
+        if (this.y + dy < boardY && this.y + dy >-1) {
+            this.y += dy;
+        }
     }
 
     public int getX() {

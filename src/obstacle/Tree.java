@@ -1,7 +1,5 @@
 package obstacle;
 
-import obstacle.Obstacle;
-
 import javax.swing.*;
 
 public class Tree extends Obstacle {

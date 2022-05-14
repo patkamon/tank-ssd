@@ -2,6 +2,7 @@ import command.*;
 import commandBullet.CommandBullet;
 import obstacle.Obstacle;
 import tank.Bullet;
+import tank.Enemy;
 import tank.Tank;
 
 import javax.swing.*;
@@ -21,10 +22,6 @@ public class Game extends JFrame implements Observer {
     private boolean isSinglePlayer;
 
     private World world;
-
-    private int score;
-
-    private Thread thread;
 
     private List<Command> commandList = new ArrayList<Command>();
     private List<CommandBullet> commandBulletList = new ArrayList<CommandBullet>();
@@ -47,9 +44,6 @@ public class Game extends JFrame implements Observer {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
-
-
-
     @Override
     public void update(Observable o, Object arg) {
         gridUI.repaint();
@@ -65,27 +59,43 @@ public class Game extends JFrame implements Observer {
                 cb.execute(world.getBullets() );
                 }
         }
-
-
-        if(world.isGameOver()) {
+        if (world.isWining() && isSinglePlayer){
+            gui.showGameWiningLabel();
+            gui.enableReplayButton();
+            return;
+        }
+        else if(world.isGameOver()) {
             gui.showGameOverLabel();
             gui.enableReplayButton();
             return;
         }
 
+        for(Enemy e: world.getEnemy()){
+            if (e.getY()< world.getPlayer()[0].getY()) {
+                commandList.add(new CommandTurnSouth(e, world.getTick() + 1));
+            }else if (e.getY()> world.getPlayer()[0].getY()) {
+                commandList.add(new CommandTurnNorth(e, world.getTick() + 1));
+            }else if (e.getX()< world.getPlayer()[0].getX()) {
+                commandList.add(new CommandTurnEast(e, world.getTick() + 1));
+            }else if (e.getX()> world.getPlayer()[0].getX()) {
+                commandList.add(new CommandTurnWest(e, world.getTick() + 1));
+            }
+            if (e.getX() == world.getPlayer()[0].getX() || e.getY() == world.getPlayer()[0].getY()){
+                CommandBullet cb = new CommandBullet(e,world.getTick()+1);
+                commandBulletList.add(cb);
+                cb.execute(world.geteBullets());
+            }
+        }
     }
 
-
-
     class Gui extends JPanel {
-
-
 
         private JLabel tickLabel;
         private JButton singleButton;
         private JButton twoButton;
         private JButton replayButton;
         private JLabel gameOverLabel;
+        private JLabel gameWiningLabel;
 
         public Gui() {
             setLayout(new FlowLayout());
@@ -97,7 +107,6 @@ public class Game extends JFrame implements Observer {
             singleButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-//                    world.start();
                     singleButton.setEnabled(false);
                     twoButton.setEnabled(false);
                     Game.this.requestFocus();
@@ -147,6 +156,11 @@ public class Game extends JFrame implements Observer {
             gameOverLabel.setForeground(Color.red);
             gameOverLabel.setVisible(false);
             add(gameOverLabel);
+
+            gameWiningLabel = new JLabel("You Win");
+            gameWiningLabel.setForeground(Color.red);
+            gameWiningLabel.setVisible(false);
+            add(gameWiningLabel);
         }
 
 
@@ -156,6 +170,9 @@ public class Game extends JFrame implements Observer {
 
         public void showGameOverLabel() {
             gameOverLabel.setVisible(true);
+        }
+        public void showGameWiningLabel() {
+            gameWiningLabel.setVisible(true);
         }
 
         public void enableReplayButton() {
@@ -177,19 +194,13 @@ public class Game extends JFrame implements Observer {
         @Override
         public void paint(Graphics g) {
             super.paint(g);
-
-
             g.setColor(Color.black);
             g.fillRect(0, 0, boardSizeX*CELL_PIXEL_SIZE, boardSizeY*CELL_PIXEL_SIZE);
 
-
             paintPlayer(g);
+            paintEnemy(g);
             paintBullet(g);
             paintTree(g);
-
-
-
-
 
             g.setColor(Color.lightGray);
             for(int i = 0; i < boardSizeX; i++) {
@@ -198,9 +209,6 @@ public class Game extends JFrame implements Observer {
             for(int i = 0; i < boardSizeY; i++) {
                 g.drawLine(0, i * CELL_PIXEL_SIZE, boardSizeX*CELL_PIXEL_SIZE, i * CELL_PIXEL_SIZE);
             }
-
-
-
         }
 
         private void paintTree(Graphics g) {
@@ -210,8 +218,6 @@ public class Game extends JFrame implements Observer {
                 int y = listTree[i].getY()*CELL_PIXEL_SIZE;
                 g.drawImage(listTree[i].getImage(),x ,y ,CELL_PIXEL_SIZE,CELL_PIXEL_SIZE,Color.black,null);
             }
-
-
         }
 
         private void paintBullet(Graphics g){
@@ -220,8 +226,11 @@ public class Game extends JFrame implements Observer {
             for(Bullet bullet : world.getBullets()) {
                 g.fillOval((bullet.getX()*CELL_PIXEL_SIZE)+20, (bullet.getY()*CELL_PIXEL_SIZE)+20, 10, 10);
             }
+            g.setColor(Color.red);
+            for(Bullet bullet : world.geteBullets()) {
+                g.fillOval((bullet.getX()*CELL_PIXEL_SIZE)+20, (bullet.getY()*CELL_PIXEL_SIZE)+20, 10, 10);
+            }
         }
-
 
 
         private void paintPlayer(Graphics g) {
@@ -231,11 +240,16 @@ public class Game extends JFrame implements Observer {
                 int y = players[i].getY()*CELL_PIXEL_SIZE;
                 g.drawImage(players[i].getImage(),x-6 ,y-6 ,CELL_PIXEL_SIZE+12,CELL_PIXEL_SIZE+12,null,null);
             }
-
-
-
         }
 
+        private void paintEnemy(Graphics g) {
+            Tank[] enemy = world.getEnemy();
+            for(int i = 0; i < enemy.length; i++) {
+                int x = enemy[i].getX()*CELL_PIXEL_SIZE;
+                int y = enemy[i].getY()*CELL_PIXEL_SIZE;
+                g.drawImage(enemy[i].getImage(),x-6 ,y-6 ,CELL_PIXEL_SIZE+12,CELL_PIXEL_SIZE+12,null,null);
+            }
+        }
 
 
     }
@@ -287,7 +301,7 @@ public class Game extends JFrame implements Observer {
                 }else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
                     CommandBullet cb = new CommandBullet(world.getPlayer()[1],world.getTick());
                     commandBulletList.add(cb);
-                    cb.execute(world.getBullets() );
+                    cb.execute(world.geteBullets());
                 }
 
                 if(e.getKeyCode() == KeyEvent.VK_W) {
@@ -311,13 +325,8 @@ public class Game extends JFrame implements Observer {
                     commandBulletList.add(cb);
                     cb.execute(world.getBullets() );
                 }
-
             }
-
-
         }
-
-
 
         }
 

@@ -27,14 +27,6 @@ public class Bullet {
         y += dy ;
     }
 
-    public int getDx() {
-        return dx;
-    }
-
-    public int getDy() {
-        return dy;
-    }
-
     public void refreshState(int x, int y, int dx, int dy){
         this.x = x;
         this.y = y;

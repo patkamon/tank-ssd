@@ -1,12 +1,12 @@
 import State.StateNorth;
-import obstacle.Brick;
+import State.StateSouth;
 import obstacle.Obstacle;
 import obstacle.Tree;
 import tank.Bullet;
+import tank.Enemy;
 import tank.Player;
 import tank.Tank;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -15,22 +15,21 @@ import java.util.Random;
 public class World extends Observable {
 
     private Obstacle [] tree;
-    private Brick [] brick;
 
-    private Thread s;
     private List<Bullet> bullets;
+    private List<Bullet> eBullets;
 
     private int sizeX;
     private int sizeY;
 
-    private Tank[] player;
-
-    private Tank [] enemy;
+    private Player [] player;
+    private Enemy [] enemy;
 
     private Thread thread;
     private int tick;
 
     private boolean notOver;
+    private boolean isWining;
     private long delayed = 1000/2;
 
     private boolean isSinglePlayer;
@@ -39,21 +38,22 @@ public class World extends Observable {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         bullets = new ArrayList<Bullet>();
+        eBullets = new ArrayList<Bullet>();
         this.isSinglePlayer = isSinglePlayer;
 
         if (isSinglePlayer){
-            player = new Tank[1];
-            player[0] = new Player(0,sizeY-1,"player1");
-            enemy = new Tank[3];
+            player = new Player[1];
+            player[0] = new Player(0,sizeY-1,"player1",sizeX,sizeY);
+            enemy = new Enemy[2];
+            enemy[0] = new Enemy(0,0,"enemy1",sizeX,sizeY);
+            enemy[1] = new Enemy(sizeX-1,sizeY-1,"enemy2",sizeX,sizeY);
 
         }else{
-            player = new Tank[2];
-            player[0] = new Player(0,sizeY-1,"player1");
-            player[1] = new Player(sizeX-1,sizeY-1,"player2");
-            enemy = new Tank[2];
+            player = new Player[2];
+            player[0] = new Player(0,sizeY-1,"player1",sizeX,sizeY);
+            player[1] = new Player(sizeX-1,0,"player2",sizeX,sizeY);
+            enemy = new Enemy[0];
         }
-
-
 
         tree = new Obstacle[10];
         Random random = new Random();
@@ -62,50 +62,26 @@ public class World extends Observable {
         }
     }
 
-    public void burstBullets(Tank tank) {
-        int dx,dy;
-        if (tank.getCurrentState().getState() ==  "West"){dx = -1; dy = 0;}
-        else  if (tank.getCurrentState().getState() ==  "South"){dx = 0; dy = 1;}
-        else  if (tank.getCurrentState().getState() ==  "East"){dx = 1; dy = 0;}
-        else{dx = 0; dy = -1;}
-
-        bullets.add(player[0].getBulletPool().requestBullet(tank.getX()+dx, tank.getY()+dy, dx,dy));
-        shrink();
-
-    }
 
     public List<Bullet> getBullets() {
         return bullets;
     }
 
-    public void shrink(){
-        s = new Thread() {
-            @Override
-            public void run() {
-                while(getBullets().size() <= 5) {
-                    try {
-                        Thread.sleep(30000);
-                        for(int i =5 ; i< player[0].getBulletPool().getBullets().size(); i++){
-                            player[0].getBulletPool().getBullets().remove(i);
-                        }
-                    } catch (InterruptedException e) {
-                        System.out.println("No No");
-                    }
-                }
-            }
-        };
-        s.start();
-    }
 
     public boolean isSinglePlayer() {
         return isSinglePlayer;
     }
 
-    public Tank[] getPlayer() {
+    public List<Bullet> geteBullets() {
+        return eBullets;
+    }
+
+
+    public Player[] getPlayer() {
         return player;
     }
 
-    public Tank[] getEnemy() {
+    public Enemy[] getEnemy() {
         return enemy;
     }
 
@@ -126,9 +102,19 @@ public class World extends Observable {
         for(Bullet bullet : bullets) {
             bullet.reset();
         }
+        for(Bullet bullet : eBullets) {
+            bullet.reset();
+        }
         player[0].setPosition(0,sizeY-1);
         if (!isSinglePlayer) {
-            player[1].setPosition(sizeX-1,sizeY-1);
+            player[1].setPosition(sizeX-1,0);
+        }else{
+            for(int i =0 ; i<enemy.length; i++){
+                enemy[i].reset();
+                enemy[i].setCurrentState(new StateSouth());
+            }
+            enemy[0].setPosition(0,0);
+            enemy[1].setPosition(sizeX-1,sizeY-1);
         }
 
         tick = 0;
@@ -138,10 +124,6 @@ public class World extends Observable {
             public void run() {
                 while(notOver) {
                     tick++;
-                    if (tick>30){
-                        notOver = false;
-                    }
-                    //TODO:fix to loop
                     for(int i =0 ; i<player.length; i++){
                         player[i].move();
                         player[i].stop();
@@ -149,8 +131,16 @@ public class World extends Observable {
                     for(Bullet bullet : bullets) {
                         bullet.move();
                     }
-//                    tickBullet();
+                    for(Bullet bullet : eBullets) {
+                        bullet.move();
+                    }
+                    for(int i =0 ; i<enemy.length; i++){
+                        enemy[i].move();
+                    }
                     checkCollisions();
+                    if (isSinglePlayer) {
+                        checkWining();
+                    }
                     setChanged();
                     notifyObservers();
                     waitFor(delayed);
@@ -161,39 +151,46 @@ public class World extends Observable {
     }
 
 
-    public void tickBullet() {
-        moveBullets();
-        cleanupBullets();
-    }
-
-    private void moveBullets() {
-        for(Bullet bullet : bullets) {
-            bullet.move();
-        }
-    }
-
-    private void cleanupBullets() {
-        List<Bullet> toRemove = new ArrayList<Bullet>();
-        for(Bullet bullet : bullets) {
-            if(bullet.getX() < 0 ||
-                    bullet.getX() > sizeX ||
-                    bullet.getY() < 0 ||
-                    bullet.getY() > sizeY) {
-                toRemove.add(bullet);
+    private void checkWining(){
+        for(Enemy e: enemy){
+            if (!e.isDead()){
+                return;
             }
         }
-        for(Bullet bullet : toRemove) {
-            bullets.remove(bullet);
-            player[0].getBulletPool().releaseBullet(bullet);
-        }
+        isWining = true;
+        notOver = false;
     }
+
+
     private void checkCollisions() {
         if (isSinglePlayer) {
-//            for (Enemy e : allEnemies) {
-//                if (e.hit(player)) {
-//                    notOver = false;
-//                }
-//            }
+            for(Tank enemy: enemy){
+                if (enemy.hit(player[0])) {
+                    notOver = false;
+                }
+            }
+            for(Bullet bullet : bullets) {
+                if(bullet.hit(player[0])){
+                    notOver = false;
+                }
+                for(Enemy e: enemy){
+                    if (bullet.hit(e)) {
+                        e.setDead(true);
+                        e.setPosition(-999,-999);
+                    }
+                }
+            }
+            for(Bullet bullet : eBullets) {
+                if(bullet.hit(player[0])){
+                    notOver = false;
+                }
+                for(Enemy e: enemy){
+                    if (bullet.hit(e)) {
+                        e.setDead(true);
+                        e.setPosition(-999,-999);
+                    }
+                }
+            }
         }else{
             if (player[0].hit(player[1])) {
                 notOver = false;
@@ -205,7 +202,22 @@ public class World extends Observable {
                 }
 
             }
+            for(Bullet bullet : eBullets) {
+                if(bullet.hit(player[0])){
+                    notOver = false;
+                }
+                for(Enemy e: enemy){
+                    if (bullet.hit(e)) {
+                        e.setDead(true);
+                        e.setPosition(-999,-999);
+                    }
+                }
+            }
         }
+    }
+
+    public boolean isWining() {
+        return isWining;
     }
 
     private void waitFor(long delayed){

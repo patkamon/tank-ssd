@@ -1,7 +1,6 @@
 package State;
 
 import command.Command;
-import command.CommandTurnEast;
 import command.CommandTurnNorth;
 import command.CommandTurnSouth;
 import tank.Tank;

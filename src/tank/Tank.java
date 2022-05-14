@@ -29,21 +29,6 @@ public abstract class Tank {
         this.boardY = boardy;
     }
 
-    public int getBoardX() {
-        return boardX;
-    }
-
-    public void setBoardX(int boardX) {
-        this.boardX = boardX;
-    }
-
-    public int getBoardY() {
-        return boardY;
-    }
-
-    public void setBoardY(int boardY) {
-        this.boardY = boardY;
-    }
 
     public BulletPool getBulletPool() {
         return bulletPool;

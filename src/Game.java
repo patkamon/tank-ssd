@@ -71,19 +71,21 @@ public class Game extends JFrame implements Observer {
         }
 
         for(Enemy e: world.getEnemy()){
-            if (e.getY()< world.getPlayer()[0].getY()) {
-                commandList.add(new CommandTurnSouth(e, world.getTick() + 1));
-            }else if (e.getY()> world.getPlayer()[0].getY()) {
-                commandList.add(new CommandTurnNorth(e, world.getTick() + 1));
-            }else if (e.getX()< world.getPlayer()[0].getX()) {
-                commandList.add(new CommandTurnEast(e, world.getTick() + 1));
-            }else if (e.getX()> world.getPlayer()[0].getX()) {
-                commandList.add(new CommandTurnWest(e, world.getTick() + 1));
-            }
-            if (e.getX() == world.getPlayer()[0].getX() || e.getY() == world.getPlayer()[0].getY()){
-                CommandBullet cb = new CommandBullet(e,world.getTick()+1);
-                commandBulletList.add(cb);
-                cb.execute(world.geteBullets());
+            if (!e.isDead()) {
+                if (e.getY() < world.getPlayer()[0].getY()) {
+                    commandList.add(new CommandTurnSouth(e, world.getTick() + 1));
+                } else if (e.getY() > world.getPlayer()[0].getY()) {
+                    commandList.add(new CommandTurnNorth(e, world.getTick() + 1));
+                } else if (e.getX() < world.getPlayer()[0].getX()) {
+                    commandList.add(new CommandTurnEast(e, world.getTick() + 1));
+                } else if (e.getX() > world.getPlayer()[0].getX()) {
+                    commandList.add(new CommandTurnWest(e, world.getTick() + 1));
+                }
+                if (e.getX() == world.getPlayer()[0].getX() || e.getY() == world.getPlayer()[0].getY()) {
+                    CommandBullet cb = new CommandBullet(e, world.getTick() + 1);
+                    commandBulletList.add(cb);
+                    cb.execute(world.geteBullets());
+                }
             }
         }
     }

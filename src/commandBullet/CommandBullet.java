@@ -9,14 +9,10 @@ public class CommandBullet {
 
     private Bullet bullet;
     private int tick;
+    private Tank tank;
+    private int dx,dy;
 
-    public  void execute(Tank tank, List<Bullet> bullets){
-        int dx,dy;
-        if (tank.getCurrentState().getState() ==  "West"){dx = -1; dy = 0;}
-        else  if (tank.getCurrentState().getState() ==  "South"){dx = 0; dy = 1;}
-        else  if (tank.getCurrentState().getState() ==  "East"){dx = 1; dy = 0;}
-        else{dx = 0; dy = -1;}
-
+    public  void execute(List<Bullet> bullets){
         bullets.add(tank.getBulletPool().requestBullet(tank.getX()+dx, tank.getY()+dy, dx,dy));
     }
 
@@ -24,9 +20,14 @@ public class CommandBullet {
         return tick;
     }
 
-    public CommandBullet(Bullet bullet, int tick) {
+    public CommandBullet(Tank tank, int tick) {
+        this.tank = tank;
+        if ( tank.getCurrentState().getState() ==  "West"){dx = -1; dy = 0;}
+        else  if ( tank.getCurrentState().getState() ==  "South"){dx = 0; dy = 1;}
+        else  if ( tank.getCurrentState().getState() ==  "East"){dx = 1; dy = 0;}
+        else{dx = 0; dy = -1;}
         this.tick = tick;
-        this.bullet = bullet;
+        this.bullet = tank.getBulletPool().requestBullet(tank.getX()+dx, tank.getY()+dy, dx,dy);
     }
 
     public Bullet getBullet() {

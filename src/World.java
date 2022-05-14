@@ -121,6 +121,7 @@ public class World extends Observable {
         // set position
         for(int i =0 ; i<player.length; i++){
             player[i].reset();
+            player[i].setCurrentState(new StateNorth());
         }
         for(Bullet bullet : bullets) {
             bullet.reset();
@@ -196,6 +197,13 @@ public class World extends Observable {
         }else{
             if (player[0].hit(player[1])) {
                 notOver = false;
+            }
+            for(Bullet bullet : bullets) {
+                for(Tank player: player)
+                if(bullet.hit(player)){
+                    notOver = false;
+                }
+
             }
         }
     }

@@ -62,7 +62,7 @@ public class Game extends JFrame implements Observer {
         }
         for(CommandBullet cb: commandBulletList){
             if (world.getTick() == cb.getTick()){
-                cb.execute(world.getPlayer()[0],world.getBullets() );
+                cb.execute(world.getBullets() );
                 }
         }
 
@@ -254,19 +254,18 @@ public class Game extends JFrame implements Observer {
                     commandList.add(c);
                     c.execute();
                 } else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    world.getPlayer()[0].getCurrentState().turnEast(world.getPlayer()[0]);
+                    Command c = new CommandTurnRight(world.getPlayer()[0], world.getTick());
+                    commandList.add(c);
+                    c.execute();
                 }else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    world.getPlayer()[0].getCurrentState().turnWest(world.getPlayer()[0]);
+                    Command c = new CommandTurnLeft(world.getPlayer()[0], world.getTick());
+                    commandList.add(c);
+                    c.execute();
                 }
-                else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    int dx,dy;
-                    if ( world.getPlayer()[0].getCurrentState().getState() ==  "West"){dx = -1; dy = 0;}
-                    else  if ( world.getPlayer()[0].getCurrentState().getState() ==  "South"){dx = 0; dy = 1;}
-                    else  if ( world.getPlayer()[0].getCurrentState().getState() ==  "East"){dx = 1; dy = 0;}
-                    else{dx = 0; dy = -1;}
-                    CommandBullet cb = new CommandBullet(world.getPlayer()[0].getBulletPool().requestBullet(world.getPlayer()[0].getX()+dx, world.getPlayer()[0].getY()+dy, dx,dy),world.getTick());
+                else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    CommandBullet cb = new CommandBullet(world.getPlayer()[0],world.getTick());
                     commandBulletList.add(cb);
-                    cb.execute(world.getPlayer()[0],world.getBullets() );
+                    cb.execute(world.getBullets() );
                 }
             }else{
                 if(e.getKeyCode() == KeyEvent.VK_UP) {
@@ -278,9 +277,17 @@ public class Game extends JFrame implements Observer {
                     commandList.add(c);
                     c.execute();
                 } else if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    world.getPlayer()[1].getCurrentState().turnEast(world.getPlayer()[1]);
+                    Command c = new CommandTurnRight(world.getPlayer()[1], world.getTick());
+                    commandList.add(c);
+                    c.execute();
                 }else if(e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    world.getPlayer()[1].getCurrentState().turnWest(world.getPlayer()[1]);
+                    Command c = new CommandTurnLeft(world.getPlayer()[1], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                }else if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    CommandBullet cb = new CommandBullet(world.getPlayer()[1],world.getTick());
+                    commandBulletList.add(cb);
+                    cb.execute(world.getBullets() );
                 }
 
                 if(e.getKeyCode() == KeyEvent.VK_W) {
@@ -292,9 +299,17 @@ public class Game extends JFrame implements Observer {
                     commandList.add(c);
                     c.execute();
                 } else if(e.getKeyCode() == KeyEvent.VK_D) {
-                    world.getPlayer()[0].getCurrentState().turnEast(world.getPlayer()[0]);
+                    Command c = new CommandTurnRight(world.getPlayer()[0], world.getTick());
+                    commandList.add(c);
+                    c.execute();
                 }else if(e.getKeyCode() == KeyEvent.VK_A) {
-                    world.getPlayer()[0].getCurrentState().turnWest(world.getPlayer()[0]);
+                    Command c = new CommandTurnLeft(world.getPlayer()[0], world.getTick());
+                    commandList.add(c);
+                    c.execute();
+                } else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    CommandBullet cb = new CommandBullet(world.getPlayer()[0],world.getTick());
+                    commandBulletList.add(cb);
+                    cb.execute(world.getBullets() );
                 }
 
             }

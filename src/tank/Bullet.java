@@ -42,6 +42,12 @@ public class Bullet {
         this.dy = dy;
     }
 
+    public boolean hit(Tank tank) {
+        return x == tank.getX() && y == tank.getY();
+    }
+
+
+
     public int getX() {
         return x;
     }

@@ -11,6 +11,11 @@ import java.awt.*;
 
 public class StateSouth extends State {
     @Override
+    public String getState() {
+        return "South";
+    }
+
+    @Override
     public Image getImg(String imgName) {
         return new ImageIcon("img/"+ imgName +"_bottom.png").getImage();
     }

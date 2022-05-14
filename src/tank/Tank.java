@@ -15,12 +15,19 @@ public abstract class Tank {
 
     private String imgName;
 
+    private BulletPool bulletPool;
+
 
     public Tank(int x, int y, String imgName) {
         this.x = x;
         this.y = y;
         this.imgName = imgName;
         this.currentState = new StateNorth();
+        this.bulletPool = new BulletPool();
+    }
+
+    public BulletPool getBulletPool() {
+        return bulletPool;
     }
 
     public Image getImage() {
@@ -91,6 +98,9 @@ public abstract class Tank {
         this.x = x;
         this.y = y;
     }
+
+
+
 
     public boolean hit(Tank tank) {
         return x == tank.x && y == tank.y;

@@ -11,6 +11,11 @@ import java.awt.*;
 
 public class StateNorth extends State{
     @Override
+    public String getState() {
+        return "North";
+    }
+
+    @Override
     public Image getImg(String imgName) {
         return new ImageIcon("img/"+imgName +"_top.png").getImage();
     }

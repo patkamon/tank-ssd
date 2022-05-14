@@ -7,6 +7,7 @@ import java.awt.*;
 
 public abstract class State {
 
+    public abstract String getState();
 
     public abstract Image getImg(String imgName);
 

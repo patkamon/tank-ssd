@@ -10,6 +10,11 @@ import java.awt.*;
 
 public class StateWest extends State{
     @Override
+    public String getState() {
+        return "West";
+    }
+
+    @Override
     public Image getImg(String imgName) {
         return new ImageIcon("img/"+imgName +"_left.png").getImage();
     }

@@ -77,6 +77,7 @@ public class Game extends JFrame{
 
             paintTree(g);
             paintSteel(g);
+            paintBrick(g);
 
 
             g.setColor(Color.lightGray);
@@ -105,6 +106,14 @@ public class Game extends JFrame{
                 int x = listSteel[i].getX() * CELL_PIXEL_SIZE;
                 int y = listSteel[i].getY() * CELL_PIXEL_SIZE;
                 g.drawImage(listSteel[i].getImage(), x, y, CELL_PIXEL_SIZE, CELL_PIXEL_SIZE, Color.black, null);
+            }
+        }
+        private void paintBrick(Graphics g) {
+            Obstacle[] listBrick = world.getBrick();
+            for (int i = 0; i < listBrick.length; i++) {
+                int x = listBrick[i].getX() * CELL_PIXEL_SIZE;
+                int y = listBrick[i].getY() * CELL_PIXEL_SIZE;
+                g.drawImage(listBrick[i].getImage(), x, y, CELL_PIXEL_SIZE, CELL_PIXEL_SIZE, Color.black, null);
             }
         }
 

@@ -27,7 +27,7 @@ public class CommandBullet {
         else  if ( tank.getCurrentState().getState() ==  "East"){dx = 1; dy = 0;}
         else{dx = 0; dy = -1;}
         this.tick = tick;
-        this.bullet = tank.getBulletPool().requestBullet(tank.getX()+dx, tank.getY()+dy, dx,dy);
+        this.bullet = tank.getBulletPool().requestBullet(tank.getX(), tank.getY(), dx,dy);
     }
 
 }

@@ -1,5 +1,6 @@
 import State.StateNorth;
 import State.StateSouth;
+import obstacle.Brick;
 import obstacle.Obstacle;
 import obstacle.Tree;
 import obstacle.Steel;
@@ -9,10 +10,7 @@ import tank.Enemy;
 import tank.Player;
 import tank.Tank;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-import java.util.Random;
+import java.util.*;
 
 public class World extends Observable {
 
@@ -20,6 +18,7 @@ public class World extends Observable {
     private Obstacle [] tree;
     private Obstacle[] brick;
 
+    private Obstacle[] saveBrick;
 
     private List<Bullet> bullets;
     private List<Bullet> eBullets;
@@ -71,12 +70,14 @@ public class World extends Observable {
 
         steel = new Obstacle[20];
         for(int i = 0; i < steel.length; i++) {
-            steel[i] = new Steel(random.nextInt(sizeX), random.nextInt(sizeY));
+            steel[i] = new Steel(random.nextInt(1,sizeX-1), random.nextInt(1,sizeY-1));
         }
 
         brick = new Obstacle[20];
+        saveBrick = new Obstacle[20];
         for(int i = 0; i < brick.length; i++) {
-            brick[i] = new Brick(random.nextInt(sizeX), random.nextInt(sizeY));
+            brick[i] = new Brick(random.nextInt(sizeX), random.nextInt(1,sizeY-1));
+            saveBrick[i] = new Brick(brick[i].getX(),brick[i].getY());
         }
     }
 
@@ -117,7 +118,17 @@ public class World extends Observable {
         return brick;
     }
 
+    public void load(){
+        // load save brick
+        for(int i = 0; i < brick.length; i++) {
+            brick[i] = new Brick(saveBrick[i].getX(),saveBrick[i].getY());
+        }
+    }
     public void start() {
+//        load();
+        brick[0].setX(-99);
+        System.out.println(brick[0].getX());
+        System.out.println(saveBrick[0].getX());
         // set position
         for(int i =0 ; i<player.length; i++){
             player[i].reset();
@@ -149,7 +160,7 @@ public class World extends Observable {
                 while(notOver) {
                     tick++;
                     for(int i =0 ; i<player.length; i++){
-                        player[i].move();
+                        player[i].move(brick,steel);
                         player[i].stop();
                     }
                     for(Bullet bullet : bullets) {
@@ -159,7 +170,7 @@ public class World extends Observable {
                         bullet.move();
                     }
                     for(int i =0 ; i<enemy.length; i++){
-                        enemy[i].move();
+                        enemy[i].move(brick,steel);
                     }
                     checkCollisions();
                     if (isSinglePlayer) {
@@ -199,8 +210,21 @@ public class World extends Observable {
                 }
                 for(Enemy e: enemy){
                     if (bullet.hit(e)) {
+                        bullet.reset();
                         e.setDead(true);
                         e.setPosition(-999,-999);
+                    }
+                }
+                for(Obstacle o: brick){
+                    if (bullet.hitObstacle(o)) {
+                        bullet.reset();
+                        o.setX(-99);
+                        o.setY(-99);
+                    }
+                }
+                for(Obstacle o: steel){
+                    if (bullet.hitObstacle(o)) {
+                        bullet.reset();
                     }
                 }
             }
@@ -210,8 +234,19 @@ public class World extends Observable {
                 }
                 for(Enemy e: enemy){
                     if (bullet.hit(e)) {
-                        e.setDead(true);
-                        e.setPosition(-999,-999);
+                        bullet.reset();
+                    }
+                }
+                for(Obstacle o: brick){
+                    if (bullet.hitObstacle(o)) {
+                        bullet.reset();
+                        o.setX(-99);
+                        o.setY(-99);
+                    }
+                }
+                for(Obstacle o: steel){
+                    if (bullet.hitObstacle(o)) {
+                        bullet.reset();
                     }
                 }
             }

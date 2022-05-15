@@ -1,6 +1,8 @@
 package tank;
 
 import State.*;
+import obstacle.Obstacle;
+
 import java.awt.*;
 
 public abstract class Tank {
@@ -76,14 +78,24 @@ public abstract class Tank {
     }
 
 
-    public void move() {
-        if (this.x + dx < boardX && this.x + dx >-1) {
+    public void move(Obstacle[] brick, Obstacle[] steel) {
+
+        if (this.x + dx >= boardX || this.x + dx <=-1) {return;}
+        else if (this.y + dy >= boardY || this.y + dy <=-1) {return;}
+        else if (wasBlock(brick) || wasBlock(steel)){return ;}
+        else {
             this.x += dx;
-        }
-        if (this.y + dy < boardY && this.y + dy >-1) {
             this.y += dy;
         }
     }
+
+    public boolean wasBlock(Obstacle[] obs){
+        for(Obstacle o: obs){
+            if (o.getX() == this.x+dx && o.getY() == this.y+dy){return true;}
+        }
+        return false;
+    }
+
 
     public int getX() {
         return x;

@@ -1,5 +1,7 @@
 package tank;
 
+import obstacle.Obstacle;
+
 public class Bullet {
 
 
@@ -37,7 +39,10 @@ public class Bullet {
     public boolean hit(Tank tank) {
         return x == tank.getX() && y == tank.getY();
     }
+    public boolean hitObstacle(Obstacle o) {
 
+        return (x == o.getX() && y == o.getY()) || (x-dx == o.getX() && y-dy == o.getY());
+    }
 
 
     public int getX() {

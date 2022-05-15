@@ -146,7 +146,7 @@ public class Game extends JFrame implements Observer {
             replayButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-
+                    world.load();
                     world.start();
                     replayButton.disable();
 
@@ -203,8 +203,8 @@ public class Game extends JFrame implements Observer {
             paintEnemy(g);
             paintBullet(g);
             paintTree(g);
-            paintSteel(g);
             paintBrick(g);
+            paintSteel(g);
 
             g.setColor(Color.lightGray);
             for(int i = 0; i < boardSizeX; i++) {
@@ -262,6 +262,7 @@ public class Game extends JFrame implements Observer {
                 g.drawImage(players[i].getImage(),x-6 ,y-6 ,CELL_PIXEL_SIZE+12,CELL_PIXEL_SIZE+12,null,null);
             }
         }
+
 
         private void paintEnemy(Graphics g) {
             Tank[] enemy = world.getEnemy();

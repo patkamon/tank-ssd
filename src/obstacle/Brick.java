@@ -4,6 +4,8 @@ import javax.swing.*;
 
 public class Brick extends Obstacle {
 
+
+
     public Brick(int x, int y) {
         this.setX(x);
         this.setY(y);

@@ -259,11 +259,35 @@ public class World extends Observable {
                 if(bullet.hit(player)){
                     notOver = false;
                 }
+                for(Obstacle o: brick){
+                    if (bullet.hitObstacle(o)) {
+                        bullet.reset();
+                        o.setX(-99);
+                        o.setY(-99);
+                    }
+                }
+                for(Obstacle o: steel){
+                    if (bullet.hitObstacle(o)) {
+                        bullet.reset();
+                    }
+                }
 
             }
             for(Bullet bullet : eBullets) {
                 if(bullet.hit(player[0])){
                     notOver = false;
+                }
+                for(Obstacle o: brick){
+                    if (bullet.hitObstacle(o)) {
+                        bullet.reset();
+                        o.setX(-99);
+                        o.setY(-99);
+                    }
+                }
+                for(Obstacle o: steel){
+                    if (bullet.hitObstacle(o)) {
+                        bullet.reset();
+                    }
                 }
                 for(Enemy e: enemy){
                     if (bullet.hit(e)) {

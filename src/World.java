@@ -2,6 +2,8 @@ import State.StateNorth;
 import State.StateSouth;
 import obstacle.Obstacle;
 import obstacle.Tree;
+import obstacle.Steel;
+
 import tank.Bullet;
 import tank.Enemy;
 import tank.Player;
@@ -14,7 +16,10 @@ import java.util.Random;
 
 public class World extends Observable {
 
+    private Obstacle [] steel;
     private Obstacle [] tree;
+    private Obstacle[] brick;
+
 
     private List<Bullet> bullets;
     private List<Bullet> eBullets;
@@ -37,6 +42,8 @@ public class World extends Observable {
     public World(int sizeX, int sizeY,boolean isSinglePlayer) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
+        tree = new Obstacle[30];
+
         bullets = new ArrayList<Bullet>();
         eBullets = new ArrayList<Bullet>();
         this.isSinglePlayer = isSinglePlayer;
@@ -56,9 +63,20 @@ public class World extends Observable {
         }
 
         tree = new Obstacle[10];
+
         Random random = new Random();
         for(int i = 0; i < tree.length; i++) {
             tree[i] = new Tree(random.nextInt(sizeX), random.nextInt(sizeY));
+        }
+
+        steel = new Obstacle[20];
+        for(int i = 0; i < steel.length; i++) {
+            steel[i] = new Steel(random.nextInt(sizeX), random.nextInt(sizeY));
+        }
+
+        brick = new Obstacle[20];
+        for(int i = 0; i < brick.length; i++) {
+            brick[i] = new Brick(random.nextInt(sizeX), random.nextInt(sizeY));
         }
     }
 
@@ -91,6 +109,12 @@ public class World extends Observable {
 
     public Obstacle[] getTree() {
         return tree;
+    }
+    public Obstacle[] getSteel() {
+        return steel;
+    }
+    public Obstacle[] getBrick() {
+        return brick;
     }
 
     public void start() {
